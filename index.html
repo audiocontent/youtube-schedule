@@ -322,27 +322,47 @@
     .dashboard,.header,.month-tabs-bar{padding-left:20px;padding-right:20px}
   }
 
-/* ===== 黒白テーマトグル ===== */
-#themeToggleBtn {
-  position: fixed; top: 16px; right: 16px; z-index: 99999;
-  width: 44px; height: 44px; border-radius: 50%;
-  border: 2px solid #888; background: #fff; color: #000;
-  font-size: 20px; cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-  transition: transform 0.2s ease;
+/* ===== テーマトグル ===== */
+#themeToggleGroup {
+  position: fixed; top: 16px; left: 16px; z-index: 99999;
+  display: inline-flex; gap: 6px;
+  padding: 6px;
+  background: #1a1f2e;
+  border-radius: 999px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
 }
-#themeToggleBtn:hover { transform: scale(1.1); }
-html[data-theme="light"] { filter: invert(1) hue-rotate(180deg); background: #fff; }
-html[data-theme="light"] img,
-html[data-theme="light"] video,
-html[data-theme="light"] iframe,
-html[data-theme="light"] svg { filter: invert(1) hue-rotate(180deg); }
-/* ===== ここまで ===== */
-
+#themeToggleGroup button {
+  border: none;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  background: transparent;
+  color: #999;
+}
+#themeToggleGroup button.active {
+  background: #22c55e;
+  color: #fff;
+}
+#themeToggleGroup button[data-theme="light"].active {
+  background: #e5e7eb;
+  color: #1a1f2e;
+}
+html.theme-light { filter: invert(1) hue-rotate(180deg); background: #fff; }
+html.theme-light img, html.theme-light video, html.theme-light iframe { filter: invert(1) hue-rotate(180deg); }
+html.theme-light #themeToggleGroup { filter: invert(1) hue-rotate(180deg); }
 </style>
 </head>
 <body>
-<button id="themeToggleBtn" title="背景色を切替">🌙</button>
+<div id="themeToggleGroup">
+  <button type="button" data-theme="light"><span>☀️</span>ホワイト</button>
+  <button type="button" data-theme="dark" class="active"><span>🌙</span>ブラック</button>
+</div>
 
 <div class="header">
   <div class="header-left">
@@ -1206,21 +1226,29 @@ var CSV_MAY = 'No,投稿予定日,投稿日変更,曜日,動画 確認,サムネ
 // ===== テーマトグル =====
 (function () {
   var root = document.documentElement;
-  var btn = document.getElementById('themeToggleBtn');
-  if (!btn) return;
-  var saved = localStorage.getItem('theme') || 'dark';
-  apply(saved);
-  btn.addEventListener('click', function(){
-    var now = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    apply(now);
-    localStorage.setItem('theme', now);
-  });
-  function apply(t) {
-    root.setAttribute('data-theme', t);
-    btn.textContent = t === 'light' ? '🌙' : '☀️';
+  var group = document.getElementById('themeToggleGroup');
+  if (!group) return;
+  var buttons = group.querySelectorAll('button[data-theme]');
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      root.classList.add('theme-light');
+    } else {
+      root.classList.remove('theme-light');
+    }
+    buttons.forEach(function(b){
+      if (b.getAttribute('data-theme') === theme) b.classList.add('active');
+      else b.classList.remove('active');
+    });
+    try { localStorage.setItem('theme', theme); } catch(e){}
   }
-})();
-
-</script>
+  var saved = 'dark';
+  try { saved = localStorage.getItem('theme') || 'dark'; } catch(e){}
+  applyTheme(saved);
+  buttons.forEach(function(b){
+    b.addEventListener('click', function(){
+      applyTheme(b.getAttribute('data-theme'));
+    });
+  });
+})();</script>
 </body>
 </html>
